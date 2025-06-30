@@ -1,0 +1,7 @@
+fastapi
+httpx
+psutil
+GPUtil
+docker
+apscheduler
+uvicorn
