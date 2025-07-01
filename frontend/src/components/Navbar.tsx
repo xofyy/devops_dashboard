@@ -1,5 +1,3 @@
-import React from "react";
-
 export default function Navbar() {
   return (
     <nav className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-yellow-400 shadow-lg py-4 px-6 flex items-center justify-between rounded-b-2xl mb-8">
