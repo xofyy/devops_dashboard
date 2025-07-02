@@ -38,9 +38,12 @@ export async function fetchUptime(): Promise<UptimeDataItem[]> {
 export interface DockerContainer {
   id: string;
   name: string;
-  status: string; // örn: "running", "exited"
+  status: string; // e.g., "running", "exited"
   image: string;
-  ports?: string; // isteğe bağlı
+  ports?: string | null;
+  cpu_percent?: number;
+  mem_usage?: number;
+  mem_percent?: number;
 }
 
 export async function fetchDockerStatus(): Promise<DockerContainer[]> {
