@@ -2,7 +2,15 @@ import { useEffect, useState } from "react";
 import { fetchUptime, type UptimeDataItem } from "../api/fetchStatus";
 import Spinner from "./Spinner";
 
-export default function UptimeStatus() {
+interface UptimeStatusProps {
+  attributes?: React.HTMLAttributes<Element>;
+  listeners?: Record<string, (...args: unknown[]) => void>;
+  isDragging?: boolean;
+  setNodeRef?: (node: HTMLElement | null) => void;
+  style?: React.CSSProperties;
+}
+
+export default function UptimeStatus({ attributes = {}, listeners = {}, isDragging = false, setNodeRef, style }: UptimeStatusProps) {
   const [data, setData] = useState<UptimeDataItem[] | null>(null);
 
   useEffect(() => {
@@ -17,16 +25,21 @@ export default function UptimeStatus() {
   if (!data) return <Spinner />;
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-auto max-h-96 mb-6">
-      <div className="flex items-center gap-2 mb-3">
+    <div ref={setNodeRef} style={style} className="bg-gradient-to-br from-white/90 via-indigo-50 to-indigo-100 dark:from-gray-800 dark:via-indigo-900 dark:to-gray-900 p-6 rounded-2xl shadow-xl hover:shadow-2xl border-0 ring-1 ring-indigo-100 dark:ring-indigo-900 overflow-auto max-h-96 mb-6 transition-all">
+      <div
+        {...attributes}
+        {...listeners}
+        className={`cursor-grab active:cursor-grabbing select-none flex items-center gap-3 mb-3 px-2 py-1 rounded-t-xl font-extrabold tracking-tight text-gray-800 dark:text-gray-100 text-2xl border-b border-gray-100 dark:border-gray-700 transition-all ${isDragging ? 'bg-indigo-100 dark:bg-indigo-900 opacity-80 scale-105' : 'bg-gray-50 dark:bg-gray-900'}`}
+        style={{ userSelect: 'none' }}
+      >
         {/* Uptime Icon */}
-        <svg className="w-6 h-6 text-yellow-500 dark:text-yellow-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <svg className="w-7 h-7 text-yellow-500 dark:text-yellow-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="10" />
           <path d="M12 6v6l4 2" />
         </svg>
-        <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">Uptime Status</h2>
+        <h2 className="text-2xl font-extrabold tracking-tight text-gray-800 dark:text-gray-100">Uptime Status</h2>
       </div>
-      <table className="w-full table-auto text-left text-sm text-gray-700 dark:text-gray-200 rounded-xl overflow-hidden">
+      <table className="w-full table-auto text-left text-base font-medium text-gray-700 dark:text-gray-200 rounded-xl overflow-hidden">
         <thead className="bg-gray-100 dark:bg-gray-700">
           <tr>
             <th className="border-b pb-2 px-2">URL</th>

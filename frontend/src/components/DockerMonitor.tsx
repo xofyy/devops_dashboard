@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { DockerContainer } from "../api/fetchStatus";
 import { fetchDockerStatus, fetchContainerLogs, startContainer, stopContainer, restartContainer, fetchContainerDetails, type ContainerDetails } from "../api/fetchStatus";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";

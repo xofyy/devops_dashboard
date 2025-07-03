@@ -45,33 +45,25 @@ const panels = [
   },
 ];
 
-function SortablePanel({ id, children }: { id: string; children: React.ReactNode }) {
+type DragHandleProps = {
+  attributes: React.HTMLAttributes<Element>;
+  listeners?: Record<string, (...args: unknown[]) => void>;
+  isDragging: boolean;
+  setNodeRef: (node: HTMLElement | null) => void;
+  style: React.CSSProperties;
+};
+
+function SortablePanel({ id, children }: { id: string; children: (handleProps: DragHandleProps) => React.ReactNode }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
-  return (
-    <div
-      ref={setNodeRef}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-        zIndex: isDragging ? 50 : undefined,
-        opacity: isDragging ? 0.85 : 1,
-        minHeight: 220,
-        minWidth: 320,
-        flexBasis: '320px',
-        flexGrow: 1,
-        maxWidth: '420px',
-        width: '100%',
-        overflow: 'hidden',
-        boxShadow: isDragging ? '0 8px 32px 0 rgba(80,80,180,0.25)' : undefined,
-        scale: isDragging ? 1.04 : 1,
-      }}
-      {...attributes}
-      {...listeners}
-      className="transition-all duration-200"
-    >
-      {isDragging ? <div style={{ minHeight: 220 }} /> : children}
-    </div>
-  );
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+    opacity: isDragging ? 0.85 : 1,
+    boxShadow: isDragging ? '0 8px 32px 0 rgba(80,80,180,0.25)' : undefined,
+    scale: isDragging ? 1.04 : 1,
+  } as React.CSSProperties;
+  return children({ attributes, listeners: listeners as Record<string, (...args: unknown[]) => void>, isDragging, setNodeRef, style });
 }
 
 function App() {
@@ -115,7 +107,7 @@ function App() {
               {/* Filtre Butonu ve Popover */}
               <div className="max-w-7xl mx-auto px-4 sm:px-8 md:px-12 mb-8 flex justify-end">
                 <button
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white font-bold shadow hover:bg-indigo-700 transition relative"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600/90 text-white font-semibold text-base shadow hover:bg-indigo-700 transition focus:outline-none focus:ring-2 focus:ring-indigo-300 relative"
                   onClick={() => setFilterOpen((v) => !v)}
                   aria-label="Panel filtrele"
                 >
@@ -123,7 +115,7 @@ function App() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2a1 1 0 0 1-.293.707l-6.414 6.414A1 1 0 0 0 13 14.414V19a1 1 0 0 1-1.447.894l-2-1A1 1 0 0 1 9 18v-3.586a1 1 0 0 0-.293-.707L2.293 6.707A1 1 0 0 1 2 6V4z" />
                   </svg>
                   <span className="hidden sm:inline">Filtrele</span>
-                  <span className="ml-2 bg-white text-indigo-700 rounded-full px-2 text-xs font-bold">{Object.values(activePanels).filter(Boolean).length}</span>
+                  <span className="ml-2 bg-white text-indigo-700 rounded-full px-2 py-0.5 text-xs font-bold shadow border border-indigo-200">{Object.values(activePanels).filter(Boolean).length}</span>
                 </button>
                 {filterOpen && (
                   <div ref={filterRef} className="absolute mt-14 right-8 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl p-4 flex flex-col gap-3 min-w-[260px] animate-fade-in">
@@ -145,7 +137,18 @@ function App() {
                   </div>
                 )}
               </div>
-              <main className="max-w-7xl mx-auto px-4 sm:px-8 md:px-12 py-10 flex flex-wrap gap-10 justify-center items-stretch overflow-x-hidden">
+              <main
+                className={
+                  `relative max-w-7xl mx-auto px-2 sm:px-6 md:px-12 py-6 md:py-10 mb-12
+                  grid gap-8 md:gap-10 xl:gap-12
+                  bg-gradient-to-b from-indigo-50/40 to-white dark:from-gray-900/60 rounded-3xl ` +
+                  (visiblePanels.length === 1
+                    ? 'grid-cols-1'
+                    : visiblePanels.length === 2
+                      ? 'grid-cols-1 sm:grid-cols-2'
+                      : 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3')
+                }
+              >
                 <DndContext
                   collisionDetection={closestCenter}
                   onDragStart={event => setDraggingId(event.active.id as string)}
@@ -161,7 +164,13 @@ function App() {
                   <SortableContext items={visiblePanels.map(p => p.key)} strategy={rectSortingStrategy}>
                     {visiblePanels.map((panel) => (
                       <SortablePanel key={panel.key} id={panel.key}>
-                        {panel.component}
+                        {(handleProps) =>
+                          panel.component &&
+                          panel.component.type === SystemStats ? <SystemStats {...handleProps} /> :
+                          panel.component.type === UptimeStatus ? <UptimeStatus {...handleProps} /> :
+                          panel.component.type === DockerStatus ? <DockerStatus {...handleProps} /> :
+                          null
+                        }
                       </SortablePanel>
                     ))}
                   </SortableContext>

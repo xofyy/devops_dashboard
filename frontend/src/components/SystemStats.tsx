@@ -11,7 +11,15 @@ interface HistoryItem {
   disk: number;
 }
 
-export default function SystemStats() {
+interface SystemStatsProps {
+  attributes?: React.HTMLAttributes<Element>;
+  listeners?: Record<string, (...args: unknown[]) => void>;
+  isDragging?: boolean;
+  setNodeRef?: (node: HTMLElement | null) => void;
+  style?: React.CSSProperties;
+}
+
+export default function SystemStats({ attributes = {}, listeners = {}, isDragging = false, setNodeRef, style }: SystemStatsProps) {
   const [data, setData] = useState<SystemStatsData | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const idRef = useRef(0);
@@ -47,14 +55,19 @@ export default function SystemStats() {
   if (!data) return <Spinner />;
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 mb-6">
-      <div className="flex items-center gap-2 mb-3">
+    <div ref={setNodeRef} style={style} className="bg-gradient-to-br from-white/90 via-indigo-50 to-indigo-100 dark:from-gray-800 dark:via-indigo-900 dark:to-gray-900 p-6 rounded-2xl shadow-xl hover:shadow-2xl border-0 ring-1 ring-indigo-100 dark:ring-indigo-900 mb-6 transition-all">
+      <div
+        {...attributes}
+        {...listeners}
+        className={`cursor-grab active:cursor-grabbing select-none flex items-center gap-3 mb-3 px-2 py-1 rounded-t-xl font-extrabold tracking-tight text-gray-800 dark:text-gray-100 text-2xl border-b border-gray-100 dark:border-gray-700 transition-all ${isDragging ? 'bg-indigo-100 dark:bg-indigo-900 opacity-80 scale-105' : 'bg-gray-50 dark:bg-gray-900'}`}
+        style={{ userSelect: 'none' }}
+      >
         {/* CPU Icon */}
-        <svg className="w-6 h-6 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <svg className="w-7 h-7 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <rect x="4" y="4" width="16" height="16" rx="2" />
           <path d="M9 9h6v6H9z" />
         </svg>
-        <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">System Stats</h2>
+        <h2 className="text-2xl font-extrabold tracking-tight text-gray-800 dark:text-gray-100">System Stats</h2>
       </div>
       {/* Grafik */}
       <div className="w-full h-48 mb-4">
@@ -76,7 +89,7 @@ export default function SystemStats() {
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-200">
+      <ul className="space-y-1 text-base font-medium text-gray-700 dark:text-gray-200">
         <li><span className="font-semibold text-blue-700 dark:text-blue-300">CPU:</span> {data.cpu_percent}%</li>
         <li><span className="font-semibold text-indigo-700 dark:text-indigo-300">RAM:</span> {data.memory.percent}% used</li>
         <li><span className="font-semibold text-yellow-700 dark:text-yellow-300">Disk:</span> {data.disk.percent}% used</li>

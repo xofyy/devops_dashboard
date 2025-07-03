@@ -17,3 +17,7 @@ app.add_middleware(
 app.include_router(system.router, prefix="/api/system")
 app.include_router(uptime.router, prefix="/api/uptime")
 app.include_router(docker_status.router, prefix="/api/docker")
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
