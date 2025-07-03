@@ -44,10 +44,62 @@ export interface DockerContainer {
   cpu_percent?: number;
   mem_usage?: number;
   mem_percent?: number;
+  net_rx?: number;
+  net_tx?: number;
+  blk_read?: number;
+  blk_write?: number;
 }
 
 export async function fetchDockerStatus(): Promise<DockerContainer[]> {
   const res = await fetch("http://localhost:8000/api/docker");
   if (!res.ok) throw new Error("Failed to fetch docker status");
+  return res.json();
+}
+
+export interface ContainerLogsResponse {
+  logs: string;
+}
+
+export async function fetchContainerLogs(containerId: string, tail = 100): Promise<ContainerLogsResponse> {
+  const res = await fetch(`http://localhost:8000/api/docker/${containerId}/logs?tail=${tail}`);
+  if (!res.ok) throw new Error("Failed to fetch container logs");
+  return res.json();
+}
+
+export async function startContainer(containerId: string): Promise<{success: boolean; message: string}> {
+  const res = await fetch(`http://localhost:8000/api/docker/${containerId}/start`, { method: "POST" });
+  return res.json();
+}
+
+export async function stopContainer(containerId: string): Promise<{success: boolean; message: string}> {
+  const res = await fetch(`http://localhost:8000/api/docker/${containerId}/stop`, { method: "POST" });
+  return res.json();
+}
+
+export async function restartContainer(containerId: string): Promise<{success: boolean; message: string}> {
+  const res = await fetch(`http://localhost:8000/api/docker/${containerId}/restart`, { method: "POST" });
+  return res.json();
+}
+
+export interface ContainerDetails {
+  id: string;
+  name: string;
+  image: string;
+  created: string;
+  status: string;
+  command?: string[];
+  env?: string[];
+  labels?: Record<string, string>;
+  working_dir?: string;
+  entrypoint?: string[];
+  restart_policy?: Record<string, unknown>;
+  network_mode?: string;
+  mounts?: Record<string, unknown>[];
+  error?: string;
+}
+
+export async function fetchContainerDetails(containerId: string): Promise<ContainerDetails> {
+  const res = await fetch(`http://localhost:8000/api/docker/${containerId}/details`);
+  if (!res.ok) throw new Error("Failed to fetch container details");
   return res.json();
 }
