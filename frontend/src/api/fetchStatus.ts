@@ -16,8 +16,10 @@ export interface SystemStatsData {
   gpu: GpuInfo[];
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+
 export async function fetchSystem(): Promise<SystemStatsData> {
-  const res = await fetch("http://localhost:8000/api/system");
+  const res = await fetch(`${API_BASE_URL}/api/system`);
   if (!res.ok) throw new Error("Failed to fetch system stats");
   return res.json();
 }
@@ -30,7 +32,7 @@ export interface UptimeDataItem {
 }
 
 export async function fetchUptime(): Promise<UptimeDataItem[]> {
-  const res = await fetch("http://localhost:8000/api/uptime");
+  const res = await fetch(`${API_BASE_URL}/api/uptime`);
   if (!res.ok) throw new Error("Failed to fetch uptime data");
   return res.json();
 }
@@ -51,7 +53,7 @@ export interface DockerContainer {
 }
 
 export async function fetchDockerStatus(): Promise<DockerContainer[]> {
-  const res = await fetch("http://localhost:8000/api/docker");
+  const res = await fetch(`${API_BASE_URL}/api/docker`);
   if (!res.ok) throw new Error("Failed to fetch docker status");
   return res.json();
 }
@@ -61,23 +63,23 @@ export interface ContainerLogsResponse {
 }
 
 export async function fetchContainerLogs(containerId: string, tail = 100): Promise<ContainerLogsResponse> {
-  const res = await fetch(`http://localhost:8000/api/docker/${containerId}/logs?tail=${tail}`);
+  const res = await fetch(`${API_BASE_URL}/api/docker/${containerId}/logs?tail=${tail}`);
   if (!res.ok) throw new Error("Failed to fetch container logs");
   return res.json();
 }
 
 export async function startContainer(containerId: string): Promise<{success: boolean; message: string}> {
-  const res = await fetch(`http://localhost:8000/api/docker/${containerId}/start`, { method: "POST" });
+  const res = await fetch(`${API_BASE_URL}/api/docker/${containerId}/start`, { method: "POST" });
   return res.json();
 }
 
 export async function stopContainer(containerId: string): Promise<{success: boolean; message: string}> {
-  const res = await fetch(`http://localhost:8000/api/docker/${containerId}/stop`, { method: "POST" });
+  const res = await fetch(`${API_BASE_URL}/api/docker/${containerId}/stop`, { method: "POST" });
   return res.json();
 }
 
 export async function restartContainer(containerId: string): Promise<{success: boolean; message: string}> {
-  const res = await fetch(`http://localhost:8000/api/docker/${containerId}/restart`, { method: "POST" });
+  const res = await fetch(`${API_BASE_URL}/api/docker/${containerId}/restart`, { method: "POST" });
   return res.json();
 }
 
@@ -99,7 +101,7 @@ export interface ContainerDetails {
 }
 
 export async function fetchContainerDetails(containerId: string): Promise<ContainerDetails> {
-  const res = await fetch(`http://localhost:8000/api/docker/${containerId}/details`);
+  const res = await fetch(`${API_BASE_URL}/api/docker/${containerId}/details`);
   if (!res.ok) throw new Error("Failed to fetch container details");
   return res.json();
 }
