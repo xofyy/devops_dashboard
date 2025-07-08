@@ -1,15 +1,8 @@
-import { useEffect, useState, useRef } from "react";
+import { useState, useEffect } from "react";
 import { fetchSystem, type SystemStatsData } from "../api/fetchStatus";
 import Spinner from "./Spinner";
 import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from "recharts";
-
-interface HistoryItem {
-  id: number;
-  time: string;
-  cpu: number;
-  ram: number;
-  disk: number;
-}
+import Toast from "./Toast";
 
 interface SystemStatsProps {
   attributes?: React.HTMLAttributes<Element>;
@@ -21,31 +14,15 @@ interface SystemStatsProps {
 
 export default function SystemStats({ attributes = {}, listeners = {}, isDragging = false, setNodeRef, style }: SystemStatsProps) {
   const [data, setData] = useState<SystemStatsData | null>(null);
-  const [history, setHistory] = useState<HistoryItem[]>([]);
-  const idRef = useRef(0);
+  const [toast, setToast] = useState<{message: string, type?: "error" | "success" | "info"} | null>(null);
 
   useEffect(() => {
     const update = () => {
-      fetchSystem().then((d) => {
-        setData(d);
-        setHistory((prev) => {
-          idRef.current += 1;
-          const now = new Date();
-          const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-          const next = [
-            ...prev,
-            {
-              id: idRef.current,
-              time,
-              cpu: d.cpu_percent,
-              ram: d.memory.percent,
-              disk: d.disk.percent,
-            },
-          ];
-          // Sadece son 20 veriyi tut
-          return next.slice(-20);
+      fetchSystem()
+        .then(setData)
+        .catch((err) => {
+          setToast({ message: err.message || "Sistem bilgileri alınamadı", type: "error" });
         });
-      }).catch(console.error);
     };
     update();
     const interval = setInterval(update, 5000);
@@ -72,7 +49,7 @@ export default function SystemStats({ attributes = {}, listeners = {}, isDraggin
       {/* Grafik */}
       <div className="w-full h-48 mb-4">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={history} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+          <LineChart data={[]} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
             <XAxis dataKey="id" tick={false} />
             <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
@@ -106,6 +83,7 @@ export default function SystemStats({ attributes = {}, listeners = {}, isDraggin
           </li>
         )}
       </ul>
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );
 }

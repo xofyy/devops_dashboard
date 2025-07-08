@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchUptime, type UptimeDataItem } from "../api/fetchStatus";
 import Spinner from "./Spinner";
+import Toast from "./Toast";
 
 interface UptimeStatusProps {
   attributes?: React.HTMLAttributes<Element>;
@@ -11,11 +12,16 @@ interface UptimeStatusProps {
 }
 
 export default function UptimeStatus({ attributes = {}, listeners = {}, isDragging = false, setNodeRef, style }: UptimeStatusProps) {
-  const [data, setData] = useState<UptimeDataItem[] | null>(null);
+  const [data, setData] = useState<UptimeDataItem[]>([]);
+  const [toast, setToast] = useState<{message: string, type?: "error" | "success" | "info"} | null>(null);
 
   useEffect(() => {
     const load = () => {
-      fetchUptime().then(setData).catch(console.error);
+      fetchUptime()
+        .then(setData)
+        .catch((err) => {
+          setToast({ message: err.message || "Uptime bilgileri alınamadı", type: "error" });
+        });
     };
     load();
     const interval = setInterval(load, 10000);
@@ -64,6 +70,7 @@ export default function UptimeStatus({ attributes = {}, listeners = {}, isDraggi
         ))}
         </tbody>
       </table>
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );
 }

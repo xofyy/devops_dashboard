@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchDockerStatus, type DockerContainer } from "../api/fetchStatus";
 import Spinner from "./Spinner";
+import Toast from "./Toast";
 
 const MONITORED_KEY = "monitoredContainers";
 
@@ -19,10 +20,15 @@ export default function DockerStatus({ attributes = {}, listeners = {}, isDraggi
     return saved ? JSON.parse(saved) : [];
   });
   const [alerts, setAlerts] = useState<string[]>([]);
+  const [toast, setToast] = useState<{message: string, type?: "error" | "success" | "info"} | null>(null);
 
   useEffect(() => {
     const load = () => {
-      fetchDockerStatus().then(setContainers).catch(console.error);
+      fetchDockerStatus()
+        .then(setContainers)
+        .catch((err) => {
+          setToast({ message: err.message || "Docker durumu alınamadı", type: "error" });
+        });
     };
     load();
     const interval = setInterval(load, 10000);
@@ -135,6 +141,7 @@ export default function DockerStatus({ attributes = {}, listeners = {}, isDraggi
           ))}
         </tbody>
       </table>
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );
 }

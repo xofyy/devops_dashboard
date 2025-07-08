@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { DockerContainer } from "../api/fetchStatus";
 import { fetchDockerStatus, fetchContainerLogs, startContainer, stopContainer, restartContainer, fetchContainerDetails, type ContainerDetails } from "../api/fetchStatus";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { DOCKER_FAVORITES_KEY, CPU_ALERT_THRESHOLD, MEM_ALERT_THRESHOLD, DEFAULT_LOG_TAIL } from "../constants";
 
 interface MetricPoint {
   time: string;
@@ -27,14 +28,14 @@ export default function DockerMonitor() {
   const [details, setDetails] = useState<ContainerDetails | null>(null);
   const [favorites, setFavorites] = useState<string[]>(() => {
     try {
-      return JSON.parse(localStorage.getItem("docker_favorites") || "[]");
+      return JSON.parse(localStorage.getItem(DOCKER_FAVORITES_KEY) || "[]");
     } catch {
       return [];
     }
   });
 
   useEffect(() => {
-    localStorage.setItem("docker_favorites", JSON.stringify(favorites));
+    localStorage.setItem(DOCKER_FAVORITES_KEY, JSON.stringify(favorites));
   }, [favorites]);
 
   // Favori ekle/çıkar
@@ -95,7 +96,7 @@ export default function DockerMonitor() {
     let cancelled = false;
     const fetchLogs = async () => {
       try {
-        const res = await fetchContainerLogs(selectedId, 100);
+        const res = await fetchContainerLogs(selectedId, DEFAULT_LOG_TAIL);
         if (!cancelled) setLogs(res.logs);
       } catch {
         if (!cancelled) setLogs("Log alınamadı");
@@ -137,8 +138,8 @@ export default function DockerMonitor() {
 
   // Uyarı hesaplama
   const lastMetric = metrics.length > 0 ? metrics[metrics.length - 1] : null;
-  const cpuAlert = lastMetric && lastMetric.cpu > 80;
-  const memAlert = lastMetric && lastMetric.mem > 90;
+  const cpuAlert = lastMetric && lastMetric.cpu > CPU_ALERT_THRESHOLD;
+  const memAlert = lastMetric && lastMetric.mem > MEM_ALERT_THRESHOLD;
 
   return (
     <div className="max-w-4xl mx-auto mt-12 p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">

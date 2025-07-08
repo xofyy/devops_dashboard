@@ -5,3 +5,4 @@ GPUtil
 docker
 apscheduler
 uvicorn
+slowapi

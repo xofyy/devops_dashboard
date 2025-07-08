@@ -1,5 +1,7 @@
 import httpx
 import time
+from fastapi import HTTPException
+from constants import DEFAULT_LOG_TAIL
 
 URLS = ["https://google.com", "https://github.com"]
 
@@ -21,4 +23,6 @@ def check_urls():
                 "status": "DOWN",
                 "error": str(e)
             })
+    if not results:
+        raise HTTPException(status_code=500, detail="URL kontrolleri başarısız oldu.")
     return results
